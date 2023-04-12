@@ -1,8 +1,8 @@
 #import utils/requester
-from utils.requester import get_response
+from crawlers.utils.requester import get_response
 from bs4 import BeautifulSoup
 #import class Book
-from models.book import Book
+from crawlers.models.book import Book
 import csv
 #init config constants
 base_url = 'https://nhasachphuongnam.com/vi/van-hoc-duong-dai'
