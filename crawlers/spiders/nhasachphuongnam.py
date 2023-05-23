@@ -1,20 +1,17 @@
-#import utils/requester
 from crawlers.utils.requester import get_response
 from bs4 import BeautifulSoup
-#import class Book
 from crawlers.models.book import Book
 import csv
-#init config constants
-base_url = 'https://nhasachphuongnam.com/vi/van-hoc-duong-dai'
 
+base_url = 'https://nhasachphuongnam.com/vi/van-hoc-duong-dai'
 
 class Nhasachphuongnam:
    
-    def __init__(self, genere, page_num, page_max):
+    def __init__(self, base_url, genere, page_num, page_max):
+        self.base_url = base_url
         self.genere = genere
         self.page_num = page_num
         self.page_max = page_max
-        pass
 
     def getBooks(self):
         booklinks=[]
@@ -56,8 +53,6 @@ class Nhasachphuongnam:
             for book in bookRead:
                 writer.writerow([book.title, book.image_url, book.genere, book.author, book.publisher, book.price, book.description, book.translator, book.num_pages])
 
-
-    
     def readBooks(self, booklinks):
         response = get_response(booklinks)
         # parse the HTML content using Beautiful Soup
