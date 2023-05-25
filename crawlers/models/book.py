@@ -13,7 +13,7 @@ class Book:
         self.price = price
         self.description = description
         self.translator = translator
-        self.nup_pages = num_pages
+        self.num_pages = num_pages
 
     def get_title(self):
         return self.title

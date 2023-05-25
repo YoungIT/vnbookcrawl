@@ -19,13 +19,13 @@ class Nhasachphuongnam:
         page_max = self.page_max
         while page_num<page_max:
             
-            page_url = f"{self.base_url}page-{}"
+            page_url = f"{self.base_url}page-{page_num}"
 
             response = get_response(page_url)
-            soup = BeautifulSoup(_res.text, "html.parser")
+            soup = BeautifulSoup(response.text, "html.parser")
         
             for link in soup.findAll("p",{"class":"price-info-nd"}):
-                booklinks.append(_.a['href'].rstrip())
+                booklinks.append(link.a['href'].rstrip())
 
             
             if "Không có sản phẩm" in response.text:

@@ -1,3 +1,5 @@
+import re
+
 from crawlers.utils.requester import get_response
 from bs4 import BeautifulSoup
 from crawlers.models.book import Book
@@ -5,7 +7,7 @@ import csv
 
 from loguru import logger
 
-class Nhasachphuongnam:
+class Bookbuy:
    
     def __init__(self, base_url, genere, page_num, page_max):
         self.base_url = base_url.replace(".html","")
@@ -51,8 +53,6 @@ class Nhasachphuongnam:
             logger.debug(f"Reading book: {book}")
             br = self.readBooks(book)
             bookRead.append(br)
-
-        print("Successfuly taken all book")
         #write bookRead list to csv file
         with open('nhasachphuongnam.csv', 'w', newline='', encoding='utf-8') as file:
             writer = csv.writer(file)
@@ -60,54 +60,39 @@ class Nhasachphuongnam:
             for book in bookRead:
                 writer.writerow([book.title, book.image_url, book.genere, book.author, book.publisher, book.price, book.description, book.translator, book.num_pages])
 
-    def readBooks(self, booklinks):
-        response = get_response(booklinks)
-        # parse the HTML content using Beautiful Soup
+    def readBooks(self, booklink):
+
+        response = get_response(booklink)
         soup = BeautifulSoup(response.content, 'html.parser')
-        # initate new instance of class book with empty arguments
+
         book = Book('', '', '', '', '', '', '', '', '')
-        # get book title
-        # extract the book title
-        book_title = soup.find('h1', class_='ty-mainbox-title').bdi.text
+        # extract book title
+        book_title = soup.find('h1', class_='title').text
         # extract the book price
-        book_price = soup.select_one('span[id*=discounted_price]').text
-
-        # find all elements with class 'ty-product-feature'
-        feature_elements = soup.find_all('div', class_='ty-product-feature')
-        # loop through the elements and extract the values for specific labels
-        
-        num_pages = ''
+        book_price = soup.find('p', class_='price').text
+        # extract book's author
+        author_name =''
+        author_list = soup.find('div',class_='author-list')
+        if author_list is not None:
+            author_name = soup.find('h2', class_='author').text
+        # extract translater
         translator = ''
-        publisher = ''
-        author_name = ''
-        num_pages = ''
+        tran_list = soup.find('div',class_='tran-list')
+        if tran_list is not None:
+            for i in translator.findAll("h2"):
+                translator += i.text.rstrip() +','
 
-        for feature in feature_elements:
-            label = feature.find('span', class_='ty-product-feature__label')
-            value = feature.find('div', class_='ty-product-feature__value')
-            if label and value:
-                if 'Số trang:' in label.text:
-                    num_pages = value.text.strip()
-                elif 'Dịch giả:' in label.text:
-                    translator = value.text.strip()
-                elif 'Nhà Xuất Bản:' in label.text:
-                    publisher = value.text.strip()
-                elif 'Tác giả:' in label.text:
-                    author_name = value.text.strip()
-                elif 'Số trang:' in label.text:
-                    num_pages = value.text.strip()
-        
+        # extract Features 
+        feature = soup.findAll('li',class_='item-p')
+        # extract publisher
+        publisher = feature[0].a.text.strip()
+        # extract book's total page
+        num_pages = feature[4].a.text.strip()
         #Get book description
-        description_section = soup.find('div', {'id': 'content_description'})
+        description_section = soup.find('div', class_='des-des')
         description_text = description_section.get_text(strip=True)
-      
-        # find the <a> tag with id starting with "det_img_link"
-        img_link_tag = soup.find('a', {'id': lambda x: x and x.startswith('det_img_link')})
-
         # extract the href attribute
-        img_link = img_link_tag.get('href')
-
-        print(img_link)
+        img_link = soup.find('div',class_='product-zoom slimmage')
 
         #Fill all information in class Book
         book.title = book_title

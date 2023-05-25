@@ -5,32 +5,36 @@ import csv
 
 from loguru import logger
 
-_category_path = "https://tiki.vn/api/personalish/v1/blocks/listings?limit=100&include=advertisement&aggregations=1&category={}&page={}&urlKey={}"
-_book_detail = 'https://tiki.vn/api/v2/products/{}?platform=web&spid={}'
+_category_path = "https://tiki.vn/api/personalish/v1/blocks/listings?limit=100&include=advertisement&aggregations=1&category"
+_book_detail = 'https://tiki.vn/api/v2/products'
 
 class Tiki:
 
     def __init__(self, base_url, genere, page_num, page_max):
+
         self.base_url = base_url.replace(".html","")
-        self.urlkey = urlkey
+        self.url_split = self.base_url.split("/")
+        self.categoryid, self.urlkey = self.url_split[-1][1:], self.url_split[-2]
         self.category_name = genere
+        self.page_num = page_num
+        self.page_max = page_max
 
     def getBooks(self):
         booklinks=[]
+        page_num = self.page_num
+        page_max = self.page_max
+        while page_num<page_max:
 
-        page_url = f"https://tiki.vn/api/personalish/v1/blocks/listings?limit=100&include=advertisement&aggregations=1&category={self.categoryid}&page=1&urlKey={self.urlkey}
-        response = get_response(page_url).json()
-        _total = response['paging']['last_page']+1
-
-        
-        for page_num in range(_total+1):
-            page_num =+1
-
-            page_url = f"https://tiki.vn/api/personalish/v1/blocks/listings?limit=100&include=advertisement&aggregations=1&category={self.categoryid}&page=1&urlKey={self.urlkey}
+            page_url = f"{_category_path}={self.categoryid}&page=1&urlKey={self.urlkey}"
             response = get_response(page_url).json()
 
-            for data in response['data']:
-                booklinks.append( (data['id'],data['seller_product_id']) )
+            if len(response['data']) == 0:
+                break
+            else:
+                for data in response['data']:
+                    booklinks.append( (data['id'],data['seller_product_id']) )
+
+            page_num =+1
 
         bookRead = []
         for book in booklinks:
@@ -39,53 +43,36 @@ class Tiki:
             bookRead.append(br)
             
     def readBooks(self, booklinks):
-        response = get_response(booklinks)
+
+        book_id, seller_product_id = booklinks[0], booklinks[1]
+        book_url = f"{_book_detail}/{book_id}?platform=web&spid={seller_product_id}"
+        response = get_response(booklinks).json()
         # parse the HTML content using Beautiful Soup
-        soup = BeautifulSoup(response.content, 'html.parser')
         # initate new instance of class book with empty arguments
         book = Book('', '', '', '', '', '', '', '', '')
         # get book title
         # extract the book title
-        book_title = soup.find('h1', class_='ty-mainbox-title').bdi.text
+        book_title = response['price']
         # extract the book price
-        book_price = soup.select_one('span[id*=discounted_price]').text
+        book_price = response['price']
+        # extract books's total pages
+        num_pages = response['specifications'][0]['attributes'][5]['value']
+        # extract publisher
+        publisher = response['specifications'][0]['attributes'][0]['value']
+        # extract translator
+        translator = response['specifications'][0]['attributes'][3]['value']
+        # extract authors
+        author_name = ''
 
-        # find all elements with class 'ty-product-feature'
-        feature_elements = soup.find_all('div', class_='ty-product-feature')
+        for _author in response['authors']:
+            author_name += _author['name'] + ','
         # loop through the elements and extract the values for specific labels
         
-        num_pages = ''
-        translator = ''
-        publisher = ''
-        author_name = ''
-        num_pages = ''
-
-        for feature in feature_elements:
-            label = feature.find('span', class_='ty-product-feature__label')
-            value = feature.find('div', class_='ty-product-feature__value')
-            if label and value:
-                if 'Số trang:' in label.text:
-                    num_pages = value.text.strip()
-                elif 'Dịch giả:' in label.text:
-                    translator = value.text.strip()
-                elif 'Nhà Xuất Bản:' in label.text:
-                    publisher = value.text.strip()
-                elif 'Tác giả:' in label.text:
-                    author_name = value.text.strip()
-                elif 'Số trang:' in label.text:
-                    num_pages = value.text.strip()
-        
         #Get book description
-        description_section = soup.find('div', {'id': 'content_description'})
-        description_text = description_section.get_text(strip=True)
+        description_text = response['description']
       
         # find the <a> tag with id starting with "det_img_link"
-        img_link_tag = soup.find('a', {'id': lambda x: x and x.startswith('det_img_link')})
-
-        # extract the href attribute
-        img_link = img_link_tag.get('href')
-
-        print(img_link)
+        img_link = response['thumbnail_url']
 
         #Fill all information in class Book
         book.title = book_title
