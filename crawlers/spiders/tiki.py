@@ -20,27 +20,38 @@ class Tiki:
         self.page_max = page_max
 
     def getBooks(self):
+
         booklinks=[]
         page_num = self.page_num
         page_max = self.page_max
+
         while page_num<page_max:
+            logger.debug(f"{page_num}")
 
             page_url = f"{_category_path}={self.categoryid}&page=1&urlKey={self.urlkey}"
+            logger.debug(page_url)
             response = get_response(page_url).json()
 
-            if len(response['data']) == 0:
+            logger.debug(response)
+
+            if page_num == page_max:
+                break
+
+            elif len(response['data']) == 0:
                 break
             else:
                 for data in response['data']:
                     booklinks.append( (data['id'],data['seller_product_id']) )
 
-            page_num =+1
+            page_num += 1
 
-        bookRead = []
-        for book in booklinks:
-            logger.debug(f"Reading book: {book}")
-            br = self.readBooks(book)
-            bookRead.append(br)
+        # bookRead = []
+        # for book in booklinks:
+        #     logger.debug(f"Reading book: {book}")
+        #     br = self.readBooks(book)
+        #     bookRead.append(br)
+
+        return booklinks
             
     def readBooks(self, booklinks):
 

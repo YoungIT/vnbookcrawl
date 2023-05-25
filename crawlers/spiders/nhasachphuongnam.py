@@ -33,14 +33,9 @@ class Nhasachphuongnam:
 
             # check if the response header contains the HTML code indicating a 404 error
             if '404' in response.headers.get('content-type'):
+                break
 
-                # Break loop if first page is 404
-                if page_num == 1:
-
-                    logger.info(f"")
-                    break
-
-                page_num=page_max
+            if page_num == page_max:
                 break
 
             # increment the page number and continue to the next page
@@ -72,36 +67,22 @@ class Nhasachphuongnam:
         # extract the book price
         book_price = soup.select_one('span[id*=discounted_price]').text
 
-        # find all elements with class 'ty-product-feature'
-        feature_elements = soup.find_all('div', class_='ty-product-feature')
-        # loop through the elements and extract the values for specific labels
-        
-        num_pages = ''
-        translator = ''
-        publisher = ''
-        author_name = ''
-        num_pages = ''
+        # extract book's total page
+        num_pages = _soup.find('span', itemprop='numberOfPages').get_text(strip=True)
 
-        for feature in feature_elements:
-            label = feature.find('span', class_='ty-product-feature__label')
-            value = feature.find('div', class_='ty-product-feature__value')
-            if label and value:
-                if 'Số trang:' in label.text:
-                    num_pages = value.text.strip()
-                elif 'Dịch giả:' in label.text:
-                    translator = value.text.strip()
-                elif 'Nhà Xuất Bản:' in label.text:
-                    publisher = value.text.strip()
-                elif 'Tác giả:' in label.text:
-                    author_name = value.text.strip()
-                elif 'Số trang:' in label.text:
-                    num_pages = value.text.strip()
-        
-        #Get book description
+        # extract translater
+        translator = _soup.find('span', itemprop='editor').get_text(strip=True)
+
+        # extract publisher
+        publisher = _soup.find('span', class_='publishers').get_text(strip=True)
+
+        # extract book's author
+        author_name = _soup.find('span', class_='author').get_text(strip=True)
+
         description_section = soup.find('div', {'id': 'content_description'})
-        description_text = description_section.get_text(strip=True)
+        description_text = soup.find("div",{"class":"full-description"}).text.split("...")[0]
       
-        # find the <a> tag with id starting with "det_img_link"
+        # extract the href attribute
         img_link_tag = soup.find('a', {'id': lambda x: x and x.startswith('det_img_link')})
 
         # extract the href attribute

@@ -1,11 +1,13 @@
+import unicodedata
 from crawlers.utils.requester import get_response
+import pandas as pd
 from bs4 import BeautifulSoup
 from crawlers.models.book import Book
 import csv
 
 from loguru import logger
 
-class Nhasachphuongnam:
+class Fahasa:
    
     def __init__(self, base_url, genere, page_num, page_max):
         self.base_url = base_url.split("?")[0]
@@ -26,8 +28,8 @@ class Nhasachphuongnam:
             response = get_response(page_url)
             soup = BeautifulSoup(response.content, 'html.parser')
 
-            for link in soup.findAll("div",{"class":"product images-container"}):
-                booklinks.append(_.a['href'])
+            for link in soup.findAll("h2",{"class":"product-name-no-ellipsis p-name-list"}):
+                booklinks.append(link.a['href'])
 
             if "Không có sản phẩm phù hợp với từ khóa tìm kiếm của bạn." in response.text:
 
@@ -53,51 +55,42 @@ class Nhasachphuongnam:
         response = get_response(booklinks)
         # parse the HTML content using Beautiful Soup
         soup = BeautifulSoup(response.content, 'html.parser')
+
+        book_div = soup.find('div',{'class':'product_view_tab_content_ad'})
+        table = book_div.find('table')
+
+        df = pd.read_html(str(table))[0]
         # initate new instance of class book with empty arguments
         book = Book('', '', '', '', '', '', '', '', '')
-        # get book title
+
         # extract the book title
-        book_title = soup.find('h1', class_='ty-mainbox-title').bdi.text
+        book_title = re.sub("(?m)^\s+","", _soup.h1.text.rstrip())
+
         # extract the book price
-        book_price = soup.select_one('span[id*=discounted_price]').text
+        book_price = unicodedata.normalize("NFKD",_soup.findAll("span",{"class":"price"})[-1].text)
 
-        # find all elements with class 'ty-product-feature'
-        feature_elements = soup.find_all('div', class_='ty-product-feature')
-        # loop through the elements and extract the values for specific labels
-        
-        num_pages = ''
+        # extract book's author
+        author_name = df[1][df.index[df[0].str.contains("Tác giả")].to_list()[0]]
+
+        # extract translater
         translator = ''
-        publisher = ''
-        author_name = ''
-        num_pages = ''
+        try:
+            translator = df[1][df.index[df[0].str.contains("Người Dịch")].to_list()[0]]
+        except:
+            pass
 
-        for feature in feature_elements:
-            label = feature.find('span', class_='ty-product-feature__label')
-            value = feature.find('div', class_='ty-product-feature__value')
-            if label and value:
-                if 'Số trang:' in label.text:
-                    num_pages = value.text.strip()
-                elif 'Dịch giả:' in label.text:
-                    translator = value.text.strip()
-                elif 'Nhà Xuất Bản:' in label.text:
-                    publisher = value.text.strip()
-                elif 'Tác giả:' in label.text:
-                    author_name = value.text.strip()
-                elif 'Số trang:' in label.text:
-                    num_pages = value.text.strip()
-        
-        #Get book description
-        description_section = soup.find('div', {'id': 'content_description'})
-        description_text = description_section.get_text(strip=True)
-      
-        # find the <a> tag with id starting with "det_img_link"
-        img_link_tag = soup.find('a', {'id': lambda x: x and x.startswith('det_img_link')})
+        # extract publisher
+        publisher = df[1][df.index[df[0].str.contains("NXB")].to_list()[0]]
+
+        # extract book's total page
+        num_pages = df[1][df.index[df[0].str.contains("Số trang")].to_list()[0]]
+
+        # get book description
+        description_text = soup.find("div",{"id":"desc_content"}).text
 
         # extract the href attribute
-        img_link = img_link_tag.get('href')
-
-        print(img_link)
-
+        img_link = soup.find("div",{"class":"product-view-image-product"}).img['src']
+        
         #Fill all information in class Book
         book.title = book_title
         book.price = book_price

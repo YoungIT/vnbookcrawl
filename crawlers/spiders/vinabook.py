@@ -5,7 +5,7 @@ import csv
 
 from loguru import logger
 
-class Nhasachphuongnam:
+class Vinabook:
    
     def __init__(self, base_url, genere, page_num, page_max):
         self.base_url = base_url.replace(".html","")
@@ -27,7 +27,6 @@ class Nhasachphuongnam:
             for link in soup.findAll("p",{"class":"price-info-nd"}):
                 booklinks.append(link.a['href'].rstrip())
 
-            
             if "Không có sản phẩm" in response.text:
 
                 break
@@ -54,8 +53,36 @@ class Nhasachphuongnam:
         soup = BeautifulSoup(response.content, 'html.parser')
         # initate new instance of class book with empty arguments
         book = Book('', '', '', '', '', '', '', '', '')
-        # get book title
+
         # extract the book title
+        book_title = soup.h1.text
+
+        # extract the book price
+        book_price = soup.find("span",{"class":"list-price nowrap"}).text
+
+        # extract book's author
+        author_name =''
+        author_list = soup.find('div',class_='author-list')
+        if author_list is not None:
+            author_name = soup.find('h2', class_='author').text
+        # extract translater
+        translator = ''
+        tran_list = soup.find('div',class_='tran-list')
+        if tran_list is not None:
+            for i in translator.findAll("h2"):
+                translator += i.text.rstrip() +','
+
+
+        book['ảnh bìa'] = _soup.find("div",{"class":"cm-image-wrap"}).img['src']
+        book['thể loại'] = "123"
+
+        _specific = _soup.find("div",{"class":"product-feature"})
+        for _ in _specific.findAll("li"):
+            _regex = re.sub('\s+',' ',_.text).split(":")
+            book[_regex[0].lower()] = _regex[1]
+
+        book['nội dung tóm tắt'] = _soup.find("div",{"class":"full-description"}).text.split("...")[0]
+        book['giá bìa'] = _soup.find("span",{"class":"list-price nowrap"}).text
         book_title = soup.find('h1', class_='ty-mainbox-title').bdi.text
         # extract the book price
         book_price = soup.select_one('span[id*=discounted_price]').text
