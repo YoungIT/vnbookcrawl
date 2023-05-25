@@ -3,12 +3,12 @@ from bs4 import BeautifulSoup
 from crawlers.models.book import Book
 import csv
 
-base_url = 'https://nhasachphuongnam.com/vi/van-hoc-duong-dai'
+from loguru import logger
 
 class Nhasachphuongnam:
    
     def __init__(self, base_url, genere, page_num, page_max):
-        self.base_url = base_url
+        self.base_url = base_url.replace(".html","")
         self.genere = genere
         self.page_num = page_num
         self.page_max = page_max
@@ -19,7 +19,7 @@ class Nhasachphuongnam:
         page_max = self.page_max
         while page_num<page_max:
             
-            page_url = f"{base_url}-page-{page_num}.html" if page_num > 1 else f"{base_url}.html"
+            page_url = f"{self.base_url}-page-{page_num}.html" if page_num > 1 else f"{self.base_url}.html"
             
             response = get_response(page_url)
             # parse the HTML content using Beautiful Soup
@@ -33,6 +33,13 @@ class Nhasachphuongnam:
 
             # check if the response header contains the HTML code indicating a 404 error
             if '404' in response.headers.get('content-type'):
+
+                # Break loop if first page is 404
+                if page_num == 1:
+
+                    logger.info(f"")
+                    break
+
                 page_num=page_max
                 break
 
@@ -41,7 +48,7 @@ class Nhasachphuongnam:
         
         bookRead = []
         for book in booklinks:
-            print(f"Reading book: {book}")
+            logger.debug(f"Reading book: {book}")
             br = self.readBooks(book)
             bookRead.append(br)
 

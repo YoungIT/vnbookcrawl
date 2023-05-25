@@ -25,7 +25,7 @@ domain_functions = {
 
 domain = "nhasachphuongnam.com"
 process_func = domain_functions[domain]
-_func = process_func("https://nhasachphuongnam.com/vi/van-hoc-duong-dai.html", df["Thể loại"][1], 1, 2)
+_func = process_func("https://nhasachphuongnam.com/vi/van-hoc-duong-dai.html", df["Thể loại"][1], 1, 4)
 _func.getBooks()
 
 # for idx,url in enumerate(df["Nguồn nhập"]):

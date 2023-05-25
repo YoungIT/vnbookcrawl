@@ -54,4 +54,3 @@ class Book:
             'translator': self.translator,
             'num_pages': self.num_pages
         }
-
