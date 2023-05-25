@@ -3,7 +3,11 @@ import pandas as pd
 from loguru import logger
 # from crawlers.nhasachphuongnam import Nhasachphuongnam
 from crawlers.spiders import (
-    Nhasachphuongnam
+    Nhasachphuongnam,
+    Tiki,
+    Fahasa,
+    Vinabook,
+    Bookbuy
 )
 
 from urllib.parse import urlparse
@@ -17,16 +21,17 @@ df.columns = ["Thể loại", "Nguồn nhập", "type"]
 
 domain_functions = {
     "nhasachphuongnam.com": Nhasachphuongnam,
-    # "tiki.vn": tiki,
-    # "www.fahasa.com" : Fahasa,
-    # "www.vinabook.com": Vinabook,
-    # "bookbuy.vn":Bookbuy
+    "tiki.vn": Tiki,
+    "www.fahasa.com" : Fahasa,
+    "www.vinabook.com": Vinabook,
+    "bookbuy.vn":Bookbuy
 }
 
-domain = "nhasachphuongnam.com"
-process_func = domain_functions[domain]
-_func = process_func("https://nhasachphuongnam.com/vi/van-hoc-duong-dai.html", df["Thể loại"][1], 1, 4)
-_func.getBooks()
+tiki = Tiki("https://tiki.vn/tac-pham-kinh-dien/c842",
+                "Văn học kinh điển – cổ điển",
+                1,2)
+result = tiki.getBooks()
+logger.debug(result)
 
 # for idx,url in enumerate(df["Nguồn nhập"]):
 #     parsed_url = urlparse(url)
