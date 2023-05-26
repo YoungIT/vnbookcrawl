@@ -44,9 +44,12 @@ class Tiki:
 
         bookRead = []
         for book in booklinks:
-            logger.debug(f"Reading book: {book}")
-            br = self.readBooks(book)
-            bookRead.append(br)
+            try:
+                logger.debug(f"Reading book: {book}")
+                br = self.readBooks(book)
+                bookRead.append(br)
+            except:
+                pass
 
         return bookRead
 
