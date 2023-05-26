@@ -1,11 +1,11 @@
 import pytest
-from crawlers.spiders import (
+from ..crawlers.spiders import (
     Tiki,
     Fahasa,
     Vinabook,
     Bookbuy
 )
-from crawlers.models.book import Book
+from ..crawlers.models.book import Book
 
 @pytest.fixture
 def book_model():
@@ -22,11 +22,13 @@ def tiki_fixture():
                 1,1)
 
 @pytest.fixture
-def lambda_b_instance():
-    # Initialize the class or object needed for Lambda B
-    return LambdaB()
+def fahasa_fixture():
+    return Fahasa()
 
 @pytest.fixture
-def lambda_c_instance():
-    # Initialize the class or object needed for Lambda C
-    return LambdaC()
+def vinabook_fixture():
+    return Vinabook()
+
+@pytest.fixture
+def bookbuy_fixture():
+    return Bookbuy()

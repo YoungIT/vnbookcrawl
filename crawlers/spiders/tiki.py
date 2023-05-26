@@ -1,6 +1,6 @@
-from crawlers.utils.requester import get_response
+from ..utils.requester import get_response
 from bs4 import BeautifulSoup
-from crawlers.models.book import Book
+from ..models.book import Book
 import csv
 
 from loguru import logger
@@ -15,7 +15,7 @@ class Tiki:
         self.base_url = base_url.replace(".html","")
         self.url_split = self.base_url.split("/")
         self.categoryid, self.urlkey = self.url_split[-1][1:], self.url_split[-2]
-        self.category_name = genere
+        self.genere = genere
         self.page_num = page_num
         self.page_max = page_max
 
@@ -57,13 +57,15 @@ class Tiki:
 
         book_id, seller_product_id = booklinks[0], booklinks[1]
         book_url = f"{_book_detail}/{book_id}?platform=web&spid={seller_product_id}"
-        response = get_response(booklinks).json()
+
+        logger.debug(book_url)
+        response = get_response(book_url).json()
         # parse the HTML content using Beautiful Soup
         # initate new instance of class book with empty arguments
         book = Book('', '', '', '', '', '', '', '', '')
         # get book title
         # extract the book title
-        book_title = response['price']
+        book_title = response['name']
         # extract the book price
         book_price = response['price']
         # extract books's total pages
@@ -80,7 +82,7 @@ class Tiki:
         # loop through the elements and extract the values for specific labels
         
         #Get book description
-        description_text = response['description']
+        description_text = response['short_description']
       
         # find the <a> tag with id starting with "det_img_link"
         img_link = response['thumbnail_url']
@@ -96,6 +98,6 @@ class Tiki:
         book.image_url = img_link
         book.genere = self.genere
 
-        return book
+        return book.get_book_info()
         
 

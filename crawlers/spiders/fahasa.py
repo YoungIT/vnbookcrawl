@@ -1,8 +1,8 @@
-import unicodedata
-from crawlers.utils.requester import get_response
+import re, unicodedata
+from ..utils.requester import get_response
 import pandas as pd
 from bs4 import BeautifulSoup
-from crawlers.models.book import Book
+from ..models.book import Book
 import csv
 
 from loguru import logger
@@ -37,19 +37,20 @@ class Fahasa:
 
             page_num += 1
         
-        bookRead = []
-        for book in booklinks:
-            logger.debug(f"Reading book: {book}")
-            br = self.readBooks(book)
-            bookRead.append(br)
+        return booklinks
+        # bookRead = []
+        # for book in booklinks:
+        #     logger.debug(f"Reading book: {book}")
+        #     br = self.readBooks(book)
+        #     bookRead.append(br)
 
-        print("Successfuly taken all book")
-        #write bookRead list to csv file
-        with open('nhasachphuongnam.csv', 'w', newline='', encoding='utf-8') as file:
-            writer = csv.writer(file)
-            writer.writerow(['title', 'image_url', 'genere', 'author', 'publisher', 'price', 'description', 'translator', 'num_pages'])
-            for book in bookRead:
-                writer.writerow([book.title, book.image_url, book.genere, book.author, book.publisher, book.price, book.description, book.translator, book.num_pages])
+        # print("Successfuly taken all book")
+        # #write bookRead list to csv file
+        # with open('nhasachphuongnam.csv', 'w', newline='', encoding='utf-8') as file:
+        #     writer = csv.writer(file)
+        #     writer.writerow(['title', 'image_url', 'genere', 'author', 'publisher', 'price', 'description', 'translator', 'num_pages'])
+        #     for book in bookRead:
+        #         writer.writerow([book.title, book.image_url, book.genere, book.author, book.publisher, book.price, book.description, book.translator, book.num_pages])
 
     def readBooks(self, booklinks):
         response = get_response(booklinks)
@@ -64,10 +65,10 @@ class Fahasa:
         book = Book('', '', '', '', '', '', '', '', '')
 
         # extract the book title
-        book_title = re.sub("(?m)^\s+","", _soup.h1.text.rstrip())
+        book_title = re.sub("(?m)^\s+","", soup.h1.text.rstrip())
 
         # extract the book price
-        book_price = unicodedata.normalize("NFKD",_soup.findAll("span",{"class":"price"})[-1].text)
+        book_price = unicodedata.normalize("NFKD",soup.findAll("span",{"class":"price"})[-1].text)
 
         # extract book's author
         author_name = df[1][df.index[df[0].str.contains("Tác giả")].to_list()[0]]

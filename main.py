@@ -27,10 +27,17 @@ domain_functions = {
     "bookbuy.vn":Bookbuy
 }
 
-tiki = Tiki("https://tiki.vn/tac-pham-kinh-dien/c842",
+# tiki = Tiki("https://tiki.vn/tac-pham-kinh-dien/c842",
+#                 "Văn học kinh điển – cổ điển",
+#                 1,2)
+# result = tiki.getBooks()
+# result = tiki.readBooks( (52789367, 52789368) )
+
+fahasa = Fahasa("https://www.fahasa.com/sach-trong-nuoc/van-hoc-trong-nuoc/tac-pham-kinh-dien.html?order=num_orders&limit=24&p=1",
                 "Văn học kinh điển – cổ điển",
                 1,2)
-result = tiki.getBooks()
+result = fahasa.getBooks()
+
 logger.debug(result)
 
 # for idx,url in enumerate(df["Nguồn nhập"]):

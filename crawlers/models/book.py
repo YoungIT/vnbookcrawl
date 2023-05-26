@@ -43,6 +43,7 @@ class Book:
         return self.num_pages
 
     def get_book_info(self):
+        
         return {
             'title': self.title,
             'image_url': self.image_url,

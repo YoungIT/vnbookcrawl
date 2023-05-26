@@ -1,6 +1,6 @@
-from crawlers.utils.requester import get_response
+from ..utils.requester import get_response
 from bs4 import BeautifulSoup
-from crawlers.models.book import Book
+from ..models.book import Book
 import csv
 
 from loguru import logger
