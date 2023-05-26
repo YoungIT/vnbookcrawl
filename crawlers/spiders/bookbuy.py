@@ -29,7 +29,7 @@ class Bookbuy:
             # parse the HTML content using Beautiful Soup
             soup = BeautifulSoup(response.content, 'html.parser')
             book_div = soup.find_all('div', class_='t-view')
-            if len(book_div) == 0:
+            if len(book_div) == 1:
                 break
             else:
                 # find all the book links and append them to the list
@@ -76,12 +76,12 @@ class Bookbuy:
         author_name =''
         author_list = soup.find('div',class_='author-list')
         if author_list is not None:
-            author_name = soup.find('h2', class_='author').text
+            author_name = soup.find('h2', class_='author').text.rstrip() 
         # extract translater
         translator = ''
         tran_list = soup.find('div',class_='tran-list')
         if tran_list is not None:
-            for i in translator.findAll("h2"):
+            for i in tran_list.findAll("h2"):
                 translator += i.text.rstrip() +','
 
         # extract Features 
