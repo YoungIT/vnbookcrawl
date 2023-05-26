@@ -87,8 +87,11 @@ class Tiki:
         # extract authors
         author_name = ''
 
-        for _author in response['authors']:
-            author_name += _author['name'] + ','
+        try:
+            for _author in response['authors']:
+                author_name += _author['name'] + ','
+        except:
+            pass
         # loop through the elements and extract the values for specific labels
         
         #Get book description

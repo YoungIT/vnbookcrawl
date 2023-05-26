@@ -62,7 +62,7 @@ for idx,url in enumerate(df["Nguồn nhập"]):
     if domain in domain_functions:
         logger.debug(domain_functions[domain])
         process_func = domain_functions[domain]
-        _func = process_func(url, df["Thể loại"][idx], 1, 20)
+        _func = process_func(url, df["Thể loại"][idx], 1, 1000)
         data = _func.getBooks()
 
         output_dir = 'outputs/' + domain
