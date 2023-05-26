@@ -35,7 +35,7 @@ class Vinabook:
                 break
 
             if page_num == page_max:
-                
+
                 break
 
             page_num += 1

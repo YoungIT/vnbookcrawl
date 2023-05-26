@@ -52,12 +52,9 @@ class Bookbuy:
         
         bookRead = []
         for book in booklinks:
-            try:
-                logger.debug(f"Reading book: {book}")
-                br = self.readBooks(book)
-                bookRead.append(br)
-            except:
-                pass
+            logger.debug(f"Reading book: {book}")
+            br = self.readBooks(book)
+            bookRead.append(br)
         #write bookRead list to csv file
         # with open('nhasachphuongnam.csv', 'w', newline='', encoding='utf-8') as file:
         #     writer = csv.writer(file)
