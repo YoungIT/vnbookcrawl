@@ -74,16 +74,21 @@ class Bookbuy:
         book_price = soup.find('p', class_='price').text
         # extract book's author
         author_name =''
-        author_list = soup.find('div',class_='author-list')
-        if author_list is not None:
-            author_name = soup.find('h2', class_='author').text.rstrip() 
+        try:
+            author_list = soup.find('div',class_='author-list')
+            if author_list is not None:
+                author_name = soup.find('h2', class_='author').text.rstrip() 
+        except:
+            pass
         # extract translater
         translator = ''
-        tran_list = soup.find('div',class_='tran-list')
-        if tran_list is not None:
-            for i in tran_list.findAll("h2"):
-                translator += i.text.rstrip() +','
-
+        try:
+            tran_list = soup.find('div',class_='tran-list')
+            if tran_list is not None:
+                for i in tran_list.findAll("h2"):
+                    translator += i.text.rstrip() +','
+        except:
+            pass
         # extract Features 
         feature = soup.findAll('li',class_='item-p')
         # extract publisher
