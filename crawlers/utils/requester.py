@@ -10,20 +10,20 @@ requests.packages.urllib3.disable_warnings()
 # }
 
 headers = {
-      'Connection': 'keep-alive',
-      'Pragma': 'no-cache',
-      'Cache-Control': 'no-cache',
-      'sec-ch-ua': '"Chromium";v="94", "Google Chrome";v="94", ";Not A Brand";v="99"',
-      'Accept': 'application/json, text/javascript, */*; q=0.01',
-      'X-Requested-With': 'XMLHttpRequest',
-      'sec-ch-ua-mobile': '?0',
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.71 Safari/537.36',
-      'sec-ch-ua-platform': '"Windows"',
-      'Sec-Fetch-Site': 'same-origin',
-      'Sec-Fetch-Mode': 'cors',
-      'Sec-Fetch-Dest': 'empty',
-      'Accept-Language': 'vi,en-US;q=0.9,en;q=0.8,vi-VN;q=0.7',
-    }
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+    'Accept-Language': 'en,vi-VN;q=0.9,vi;q=0.8,fr-FR;q=0.7,fr;q=0.6,en-US;q=0.5,zh-CN;q=0.4,zh;q=0.3',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive',
+    'Pragma': 'no-cache',
+    'Sec-Fetch-Dest': 'document',
+    'Sec-Fetch-Mode': 'navigate',
+    'Sec-Fetch-Site': 'same-origin',
+    'Sec-Fetch-User': '?1',
+    'Upgrade-Insecure-Requests': '1',
+    'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36',
+    'sec-ch-ua-mobile': '?0',
+    'sec-ch-ua-platform': '"Linux"',
+}
 
 class API_Gateway_rotater:
     def __init__(self, url, AWS_ID, AWS_SECRET):
@@ -38,7 +38,7 @@ class API_Gateway_rotater:
 
 #get response from url
 # @decorators.retry(HTTPError, delay=5, tries=3, logger=logger)
-def get_response(url):
+def get_response(url, headers=headers):
     #response = proxy_request(url)
     response = requests.get(url, headers=headers, timeout=5, verify=False)
     return response

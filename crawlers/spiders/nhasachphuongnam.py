@@ -68,16 +68,16 @@ class Nhasachphuongnam:
         book_price = soup.select_one('span[id*=discounted_price]').text
 
         # extract book's total page
-        num_pages = _soup.find('span', itemprop='numberOfPages').get_text(strip=True)
+        num_pages = soup.find('span', itemprop='numberOfPages').get_text(strip=True)
 
         # extract translater
-        translator = _soup.find('span', itemprop='editor').get_text(strip=True)
+        translator = soup.find('span', itemprop='editor').get_text(strip=True)
 
         # extract publisher
-        publisher = _soup.find('span', class_='publishers').get_text(strip=True)
+        publisher = soup.find('span', class_='publishers').get_text(strip=True)
 
         # extract book's author
-        author_name = _soup.find('span', class_='author').get_text(strip=True)
+        author_name = soup.find('span', class_='author').get_text(strip=True)
 
         description_section = soup.find('div', {'id': 'content_description'})
         description_text = soup.find("div",{"class":"full-description"}).text.split("...")[0]

@@ -20,33 +20,35 @@ class Bookbuy:
         page_num = self.page_num
         page_max = self.page_max
         while page_num<page_max:
+
+            logger.info(f"Crawling Page {page_num} of {self.base_url}")
             
             page_url = f"{self.base_url}?Page={page_num}"
             
             response = get_response(page_url)
             # parse the HTML content using Beautiful Soup
             soup = BeautifulSoup(response.content, 'html.parser')
-
-            # find all the book links and append them to the list
-            for link in soup.find_all('a', class_='product-item'): 
-                #log added link
-                print(f"Added link: {link['href']}")
-                booklinks.append(link['href'])
+            book_div = soup.find_all('div', class_='t-view')
+            if len(book_div) == 0:
+                break
+            else:
+                # find all the book links and append them to the list
+                for link in book_div:
+                    try:
+                        booklinks.append("https://bookbuy.vn"+link.a['href'])
+                    except:
+                        pass
 
             # check if the response header contains the HTML code indicating a 404 error
-            if '404' in response.headers.get('content-type'):
+            
+            if page_num == page_max:
 
-                # Break loop if first page is 404
-                if page_num == 1:
-
-                    logger.info(f"")
-                    break
-
-                page_num=page_max
                 break
 
             # increment the page number and continue to the next page
             page_num += 1
+
+        # return booklinks
         
         bookRead = []
         for book in booklinks:
@@ -54,11 +56,11 @@ class Bookbuy:
             br = self.readBooks(book)
             bookRead.append(br)
         #write bookRead list to csv file
-        with open('nhasachphuongnam.csv', 'w', newline='', encoding='utf-8') as file:
-            writer = csv.writer(file)
-            writer.writerow(['title', 'image_url', 'genere', 'author', 'publisher', 'price', 'description', 'translator', 'num_pages'])
-            for book in bookRead:
-                writer.writerow([book.title, book.image_url, book.genere, book.author, book.publisher, book.price, book.description, book.translator, book.num_pages])
+        # with open('nhasachphuongnam.csv', 'w', newline='', encoding='utf-8') as file:
+        #     writer = csv.writer(file)
+        #     writer.writerow(['title', 'image_url', 'genere', 'author', 'publisher', 'price', 'description', 'translator', 'num_pages'])
+        #     for book in bookRead:
+        #         writer.writerow([book.title, book.image_url, book.genere, book.author, book.publisher, book.price, book.description, book.translator, book.num_pages])
 
     def readBooks(self, booklink):
 
@@ -85,9 +87,18 @@ class Bookbuy:
         # extract Features 
         feature = soup.findAll('li',class_='item-p')
         # extract publisher
-        publisher = feature[0].a.text.strip()
+        publisher = ''
+        try:
+            publisher = feature[0].a.text.strip()
+        except:
+            pass
         # extract book's total page
-        num_pages = feature[4].a.text.strip()
+        num_pages = ''
+        try:
+            num_pages = re.sub('[^A-Za-z0-9]+', ' ', feature[4].find('span').text)
+        except:
+            pass
+
         #Get book description
         description_section = soup.find('div', class_='des-des')
         description_text = description_section.get_text(strip=True)
@@ -105,6 +116,6 @@ class Bookbuy:
         book.image_url = img_link
         book.genere = self.genere
 
-        return book
+        return book.get_book_info()
         
 

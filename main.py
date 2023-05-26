@@ -9,6 +9,8 @@ from crawlers.spiders import (
     Vinabook,
     Bookbuy
 )
+# from crawlers.models.book import Book
+import csv, os
 
 from urllib.parse import urlparse
 
@@ -20,7 +22,7 @@ df.columns = ["Thể loại", "Nguồn nhập", "type"]
 # fhs.getBooks()
 
 domain_functions = {
-    "nhasachphuongnam.com": Nhasachphuongnam,
+    # "nhasachphuongnam.com": Nhasachphuongnam,
     "tiki.vn": Tiki,
     "www.fahasa.com" : Fahasa,
     "www.vinabook.com": Vinabook,
@@ -33,26 +35,54 @@ domain_functions = {
 # result = tiki.getBooks()
 # result = tiki.readBooks( (52789367, 52789368) )
 
-fahasa = Fahasa("https://www.fahasa.com/sach-trong-nuoc/van-hoc-trong-nuoc/tac-pham-kinh-dien.html?order=num_orders&limit=24&p=1",
-                "Văn học kinh điển – cổ điển",
-                1,2)
-result = fahasa.getBooks()
+# fahasa = Fahasa("https://www.fahasa.com/sach-trong-nuoc/van-hoc-trong-nuoc/tac-pham-kinh-dien.html?order=num_orders&limit=24&p=1",
+#                 "Văn học kinh điển – cổ điển",
+#                 1,2)
+# result = fahasa.getBooks()
+# result = fahasa.readBooks("https://www.fahasa.com/ong-gia-va-bien-ca-tai-ban-2018.html")
 
-logger.debug(result)
+# vinabook = Vinabook("https://www.vinabook.com/c415/truyen-ngan-tan-van/",
+#                     "Truyện ngắn - tản văn – tạp văn",
+#                     1,2
+# )
+# result = vinabook.getBooks()
+# result = vinabook.readBooks(" https://www.vinabook.com/mo-collection-vol1-p90349.html")
 
-# for idx,url in enumerate(df["Nguồn nhập"]):
-#     parsed_url = urlparse(url)
-#     domain = parsed_url.netloc
+# bookbuy = Bookbuy("https://bookbuy.vn/sach/tac-pham-viet-nam-kinh-dien", 
+#                   "Văn học kinh điển – cổ điển",
+#                   1,2)
+# result = bookbuy.getBooks()
+# result = bookbuy.readBooks("https://bookbuy.vn/sach/dao-giau-vang-tai-ban-2020--p108259.html")
+# logger.debug(result)
 
-#     if domain in domain_functions:
-#         logger.debug(domain_functions[domain])
-#         process_func = domain_functions[domain]
-#         _func = process_func(url, df["Thể loại"][idx], 1, 2)
-#         _func.getBooks()
+for idx,url in enumerate(df["Nguồn nhập"]):
+    parsed_url = urlparse(url)
+    domain = parsed_url.netloc
 
-#         break
-#     else:
-#         print("No processing function defined for domain:", domain)
+    if domain in domain_functions:
+        logger.debug(domain_functions[domain])
+        process_func = domain_functions[domain]
+        _func = process_func(url, df["Thể loại"][idx], 1, 20)
+        data = _func.getBooks()
+
+        output_dir = 'outputs/' + domain
+
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+            logger.info(f"Directory {output_dir} created successfully!")
+
+
+        output_file = output_dir+'/' + df["Thể loại"][idx] + '.csv'
+        fieldnames = data[0].keys()
+        with open(output_file, 'w', newline='', encoding='utf-8') as file:
+
+            writer = csv.DictWriter(file, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(data)
+
+            logger.success(f"CSV file {output_file} created successfully.")
+    else:
+        print("No processing function defined for domain:", domain)
 
 
 # # Loop through the URLs and call the corresponding processing function based on the domain

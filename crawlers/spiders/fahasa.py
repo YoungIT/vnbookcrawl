@@ -23,26 +23,33 @@ class Fahasa:
         
         while page_num<page_max:
 
+            logger.info(f"Crawling Page {page_num} of {self.base_url}")
+
             page_url = f"{self.base_url}?order=num_orders&limit=24&p={page_num}"
 
             response = get_response(page_url)
             soup = BeautifulSoup(response.content, 'html.parser')
 
-            for link in soup.findAll("h2",{"class":"product-name-no-ellipsis p-name-list"}):
-                booklinks.append(link.a['href'])
-
-            if "Không có sản phẩm phù hợp với từ khóa tìm kiếm của bạn." in response.text:
-
+            book_div = soup.findAll("h2",{"class":"product-name-no-ellipsis p-name-list"})
+            if len(book_div) == 0:
                 break
+            else:
+                for link in book_div:
+                    booklinks.append(link.a['href'])
+
+            if page_num == page_max:
+                break 
 
             page_num += 1
         
-        return booklinks
-        # bookRead = []
-        # for book in booklinks:
-        #     logger.debug(f"Reading book: {book}")
-        #     br = self.readBooks(book)
-        #     bookRead.append(br)
+        # return booklinks
+        bookRead = []
+        for book in booklinks:
+            logger.debug(f"Reading book: {book}")
+            br = self.readBooks(book)
+            bookRead.append(br)
+
+        return bookRead
 
         # print("Successfuly taken all book")
         # #write bookRead list to csv file
@@ -71,7 +78,11 @@ class Fahasa:
         book_price = unicodedata.normalize("NFKD",soup.findAll("span",{"class":"price"})[-1].text)
 
         # extract book's author
-        author_name = df[1][df.index[df[0].str.contains("Tác giả")].to_list()[0]]
+        author_name = ''
+        try:
+            author_name = df[1][df.index[df[0].str.contains("Tác giả")].to_list()[0]]
+        except:
+            pass
 
         # extract translater
         translator = ''
@@ -81,10 +92,18 @@ class Fahasa:
             pass
 
         # extract publisher
-        publisher = df[1][df.index[df[0].str.contains("NXB")].to_list()[0]]
+        publisher = ''
+        try:
+            publisher = df[1][df.index[df[0].str.contains("NXB")].to_list()[0]]
+        except:
+            pass
 
         # extract book's total page
-        num_pages = df[1][df.index[df[0].str.contains("Số trang")].to_list()[0]]
+        num_pages = ''
+        try:
+            num_pages = df[1][df.index[df[0].str.contains("Số trang")].to_list()[0]]
+        except:
+            pass
 
         # get book description
         description_text = soup.find("div",{"id":"desc_content"}).text
@@ -103,6 +122,6 @@ class Fahasa:
         book.image_url = img_link
         book.genere = self.genere
 
-        return book
+        return book.get_book_info()
         
 

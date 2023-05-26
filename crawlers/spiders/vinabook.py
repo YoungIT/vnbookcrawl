@@ -18,6 +18,8 @@ class Vinabook:
         page_num = self.page_num
         page_max = self.page_max
         while page_num<page_max:
+
+            logger.info(f"Crawling Page {page_num} of {self.base_url}")
             
             page_url = f"{self.base_url}page-{page_num}"
 
@@ -25,13 +27,20 @@ class Vinabook:
             soup = BeautifulSoup(response.text, "html.parser")
         
             for link in soup.findAll("p",{"class":"price-info-nd"}):
+                logger.debug(link.a['href'].rstrip())
                 booklinks.append(link.a['href'].rstrip())
 
             if "Không có sản phẩm" in response.text:
 
                 break
 
+            if page_num == page_max:
+                
+                break
+
             page_num += 1
+        
+        # return booklinks
             
         bookRead = []
         for book in booklinks:
@@ -39,16 +48,32 @@ class Vinabook:
             br = self.readBooks(book)
             bookRead.append(br)
 
-        print("Successfuly taken all book")
+        # print("Successfuly taken all book")
         #write bookRead list to csv file
-        with open('nhasachphuongnam.csv', 'w', newline='', encoding='utf-8') as file:
-            writer = csv.writer(file)
-            writer.writerow(['title', 'image_url', 'genere', 'author', 'publisher', 'price', 'description', 'translator', 'num_pages'])
-            for book in bookRead:
-                writer.writerow([book.title, book.image_url, book.genere, book.author, book.publisher, book.price, book.description, book.translator, book.num_pages])
+        # with open('nhasachphuongnam.csv', 'w', newline='', encoding='utf-8') as file:
+            # writer = csv.writer(file)
+            # writer.writerow(['title', 'image_url', 'genere', 'author', 'publisher', 'price', 'description', 'translator', 'num_pages'])
+            # for book in bookRead:
+            #     writer.writerow([book.title, book.image_url, book.genere, book.author, book.publisher, book.price, book.description, book.translator, book.num_pages])
 
     def readBooks(self, booklinks):
-        response = get_response(booklinks)
+
+        headers = {
+            'authority': 'www.vinabook.com',
+            'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+            'accept-language': 'en,vi-VN;q=0.9,vi;q=0.8,fr-FR;q=0.7,fr;q=0.6,en-US;q=0.5,zh-CN;q=0.4,zh;q=0.3',
+            'cache-control': 'no-cache',
+            'pragma': 'no-cache',
+            'sec-ch-ua-mobile': '?0',
+            'sec-ch-ua-platform': '"Linux"',
+            'sec-fetch-dest': 'document',
+            'sec-fetch-mode': 'navigate',
+            'sec-fetch-site': 'same-origin',
+            'sec-fetch-user': '?1',
+            'upgrade-insecure-requests': '1',
+            'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36',
+        }
+        response = get_response(booklinks, headers)
         # parse the HTML content using Beautiful Soup
         soup = BeautifulSoup(response.content, 'html.parser')
         # initate new instance of class book with empty arguments
@@ -60,69 +85,33 @@ class Vinabook:
         # extract the book price
         book_price = soup.find("span",{"class":"list-price nowrap"}).text
 
-        # extract book's author
-        author_name =''
-        author_list = soup.find('div',class_='author-list')
-        if author_list is not None:
-            author_name = soup.find('h2', class_='author').text
-        # extract translater
-        translator = ''
-        tran_list = soup.find('div',class_='tran-list')
-        if tran_list is not None:
-            for i in translator.findAll("h2"):
-                translator += i.text.rstrip() +','
-
-
-        book['ảnh bìa'] = _soup.find("div",{"class":"cm-image-wrap"}).img['src']
-        book['thể loại'] = "123"
-
-        _specific = _soup.find("div",{"class":"product-feature"})
-        for _ in _specific.findAll("li"):
-            _regex = re.sub('\s+',' ',_.text).split(":")
-            book[_regex[0].lower()] = _regex[1]
-
-        book['nội dung tóm tắt'] = _soup.find("div",{"class":"full-description"}).text.split("...")[0]
-        book['giá bìa'] = _soup.find("span",{"class":"list-price nowrap"}).text
-        book_title = soup.find('h1', class_='ty-mainbox-title').bdi.text
-        # extract the book price
-        book_price = soup.select_one('span[id*=discounted_price]').text
-
-        # find all elements with class 'ty-product-feature'
-        feature_elements = soup.find_all('div', class_='ty-product-feature')
-        # loop through the elements and extract the values for specific labels
-        
         num_pages = ''
         translator = ''
         publisher = ''
         author_name = ''
         num_pages = ''
 
-        for feature in feature_elements:
-            label = feature.find('span', class_='ty-product-feature__label')
-            value = feature.find('div', class_='ty-product-feature__value')
-            if label and value:
-                if 'Số trang:' in label.text:
-                    num_pages = value.text.strip()
-                elif 'Dịch giả:' in label.text:
-                    translator = value.text.strip()
-                elif 'Nhà Xuất Bản:' in label.text:
-                    publisher = value.text.strip()
-                elif 'Tác giả:' in label.text:
-                    author_name = value.text.strip()
-                elif 'Số trang:' in label.text:
-                    num_pages = value.text.strip()
-        
+        author_tag = soup.find('strong', text='Tác giả: ')
+        if author_tag:
+            author_name = author_tag.find_next_sibling('span', class_='author').get_text(strip=True)
+
+        publisher_tag = soup.find('strong', text='Nhà xuất bản: ')
+        if publisher_tag:
+            publisher = publisher_tag.find_next_sibling('span', class_='publishers').get_text(strip=True)
+
+        num_pages_tag = soup.find('strong', text='Số trang: ')
+        if num_pages_tag:
+            num_pages = num_pages_tag.find_next_sibling('span', itemprop='numberOfPages').get_text(strip=True)
+                
         #Get book description
-        description_section = soup.find('div', {'id': 'content_description'})
-        description_text = description_section.get_text(strip=True)
+        description_text = soup.find('div',class_='mainbox2-container').text
       
         # find the <a> tag with id starting with "det_img_link"
-        img_link_tag = soup.find('a', {'id': lambda x: x and x.startswith('det_img_link')})
+        img_tag = soup.find('img', itemprop='image')
 
         # extract the href attribute
-        img_link = img_link_tag.get('href')
-
-        print(img_link)
+        if img_tag:
+            img_link = img_tag['src']
 
         #Fill all information in class Book
         book.title = book_title
@@ -135,6 +124,6 @@ class Vinabook:
         book.image_url = img_link
         book.genere = self.genere
 
-        return book
+        return book.get_book_info()
         
 

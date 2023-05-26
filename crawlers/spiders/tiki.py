@@ -26,13 +26,10 @@ class Tiki:
         page_max = self.page_max
 
         while page_num<page_max:
-            logger.debug(f"{page_num}")
+            logger.info(f"Crawling Page {page_num} of {self.base_url}")
 
             page_url = f"{_category_path}={self.categoryid}&page=1&urlKey={self.urlkey}"
-            logger.debug(page_url)
             response = get_response(page_url).json()
-
-            logger.debug(response)
 
             if page_num == page_max:
                 break
@@ -45,14 +42,14 @@ class Tiki:
 
             page_num += 1
 
-        # bookRead = []
-        # for book in booklinks:
-        #     logger.debug(f"Reading book: {book}")
-        #     br = self.readBooks(book)
-        #     bookRead.append(br)
+        bookRead = []
+        for book in booklinks:
+            logger.debug(f"Reading book: {book}")
+            br = self.readBooks(book)
+            bookRead.append(br)
 
-        return booklinks
-            
+        return bookRead
+
     def readBooks(self, booklinks):
 
         book_id, seller_product_id = booklinks[0], booklinks[1]
@@ -68,12 +65,25 @@ class Tiki:
         book_title = response['name']
         # extract the book price
         book_price = response['price']
+
+        num_pages = ''
+        publisher = ''
+        translator = ''
         # extract books's total pages
-        num_pages = response['specifications'][0]['attributes'][5]['value']
+        try:
+            num_pages = response['specifications'][0]['attributes'][5]['value']
+        except:
+            pass
         # extract publisher
-        publisher = response['specifications'][0]['attributes'][0]['value']
+        try:
+            publisher = response['specifications'][0]['attributes'][0]['value']
+        except:
+            pass 
         # extract translator
-        translator = response['specifications'][0]['attributes'][3]['value']
+        try:
+            translator = response['specifications'][0]['attributes'][3]['value']
+        except:
+            pass
         # extract authors
         author_name = ''
 
