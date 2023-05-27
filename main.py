@@ -14,6 +14,8 @@ import csv, os
 
 from urllib.parse import urlparse
 
+logger.add("debug.log")
+
 df = pd.read_csv("book_collection.csv")
 df.dropna(inplace = True) 
 df.columns = ["Thể loại", "Nguồn nhập", "type"]
@@ -56,33 +58,36 @@ domain_functions = {
 # logger.debug(result)
 
 for idx,url in enumerate(df["Nguồn nhập"]):
-    parsed_url = urlparse(url)
-    domain = parsed_url.netloc
+    try:
+        parsed_url = urlparse(url)
+        domain = parsed_url.netloc
 
-    if domain in domain_functions:
-        logger.debug(domain_functions[domain])
-        process_func = domain_functions[domain]
-        _func = process_func(url, df["Thể loại"][idx], 1, 1000)
-        data = _func.getBooks()
+        if domain in domain_functions:
+            logger.debug(domain_functions[domain])
+            process_func = domain_functions[domain]
+            _func = process_func(url, df["Thể loại"][idx], 1, 1000)
+            data = _func.getBooks()
 
-        output_dir = 'outputs/' + domain
+            output_dir = 'outputs/' + domain
 
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
-            logger.info(f"Directory {output_dir} created successfully!")
+            if not os.path.exists(output_dir):
+                os.makedirs(output_dir)
+                logger.info(f"Directory {output_dir} created successfully!")
 
 
-        output_file = output_dir+'/' + df["Thể loại"][idx] + '.csv'
-        fieldnames = data[0].keys()
-        with open(output_file, 'w', newline='', encoding='utf-8') as file:
+            output_file = output_dir+'/' + df["Thể loại"][idx] + '.csv'
+            fieldnames = data[0].keys()
+            with open(output_file, 'w', newline='', encoding='utf-8') as file:
 
-            writer = csv.DictWriter(file, fieldnames=fieldnames)
-            writer.writeheader()
-            writer.writerows(data)
+                writer = csv.DictWriter(file, fieldnames=fieldnames)
+                writer.writeheader()
+                writer.writerows(data)
 
-            logger.success(f"CSV file {output_file} created successfully.")
-    else:
-        print("No processing function defined for domain:", domain)
+                logger.success(f"CSV file {output_file} created successfully.")
+        else:
+            print("No processing function defined for domain:", domain)
+   except Exception as Error:
+    logger.debug(f"cannot crawl {url} due to Error : {Error}")
 
 
 # # Loop through the URLs and call the corresponding processing function based on the domain
