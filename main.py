@@ -18,7 +18,7 @@ logger.add("debug.log")
 
 df = pd.read_csv("leftover.csv")
 df.dropna(inplace = True) 
-df.columns = ["Thể loại", "Nguồn nhập", "type"]
+df.columns = ["STT", "Thể loại", "Nguồn nhập"]
 
 domain_functions = {
     "nhasachphuongnam.com": Nhasachphuongnam,
