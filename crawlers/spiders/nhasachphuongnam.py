@@ -5,6 +5,8 @@ import csv
 
 from loguru import logger
 
+logger.add("logging/nhasachphuongnam.log", backtrace=True, diagnose=True)
+
 class Nhasachphuongnam:
    
     def __init__(self, base_url, genere, page_num, page_max):
@@ -18,42 +20,43 @@ class Nhasachphuongnam:
         page_num = self.page_num
         page_max = self.page_max
         while page_num<page_max:
-            
-            page_url = f"{self.base_url}-page-{page_num}.html" if page_num > 1 else f"{self.base_url}.html"
-            
-            response = get_response(page_url)
-            # parse the HTML content using Beautiful Soup
-            soup = BeautifulSoup(response.content, 'html.parser')
+            try:
+                page_url = f"{self.base_url}-page-{page_num}.html" if page_num > 1 else f"{self.base_url}.html"
+                
+                response = get_response(page_url)
+                # parse the HTML content using Beautiful Soup
+                soup = BeautifulSoup(response.content, 'html.parser')
 
-            # find all the book links and append them to the list
-            for link in soup.find_all('a', class_='product-title'): 
-                #log added link
-                print(f"Added link: {link['href']}")
-                booklinks.append(link['href'])
+                # find all the book links and append them to the list
 
-            # check if the response header contains the HTML code indicating a 404 error
-            if '404' in response.headers.get('content-type'):
-                break
+                for link in soup.find_all('a', class_='product-title'): 
 
-            if page_num == page_max:
-                break
+                    #log added link
+                    print(f"Added link: {link['href']}")
+                    booklinks.append(link['href'])
 
-            # increment the page number and continue to the next page
-            page_num += 1
+                # check if the response header contains the HTML code indicating a 404 error
+                if '404' in response.headers.get('content-type'):
+                    break
+
+                if page_num == page_max:
+                    break
+
+                # increment the page number and continue to the next page
+                page_num += 1
+            except:
+                pass
         
         bookRead = []
         for book in booklinks:
-            logger.debug(f"Reading book: {book}")
-            br = self.readBooks(book)
-            bookRead.append(br)
+            try:
+                logger.debug(f"Reading book: {book}")
+                br = self.readBooks(book)
+                bookRead.append(br)
+            except Exception as Error:
+                logger.exception(f"Cant Reading book {book} due to Error : {Error}")
 
-        print("Successfuly taken all book")
-        #write bookRead list to csv file
-        with open('nhasachphuongnam.csv', 'w', newline='', encoding='utf-8') as file:
-            writer = csv.writer(file)
-            writer.writerow(['title', 'image_url', 'genere', 'author', 'publisher', 'price', 'description', 'translator', 'num_pages'])
-            for book in bookRead:
-                writer.writerow([book.title, book.image_url, book.genere, book.author, book.publisher, book.price, book.description, book.translator, book.num_pages])
+        return bookRead
 
     def readBooks(self, booklinks):
         response = get_response(booklinks)
@@ -67,28 +70,40 @@ class Nhasachphuongnam:
         # extract the book price
         book_price = soup.select_one('span[id*=discounted_price]').text
 
-        # extract book's total page
-        num_pages = soup.find('span', itemprop='numberOfPages').get_text(strip=True)
+        # find all elements with class 'ty-product-feature'
+        feature_elements = soup.find_all('div', class_='ty-product-feature')
+        # loop through the elements and extract the values for specific labels
 
-        # extract translater
-        translator = soup.find('span', itemprop='editor').get_text(strip=True)
+        num_pages = ''
+        translator = ''
+        publisher = ''
+        author_name = ''
+        num_pages = ''
 
-        # extract publisher
-        publisher = soup.find('span', class_='publishers').get_text(strip=True)
+        for feature in feature_elements:
+            label = feature.find('span', class_='ty-product-feature__label')
+            value = feature.find('div', class_='ty-product-feature__value')
+            if label and value:
+                if 'Số trang:' in label.text:
+                    num_pages = value.text.strip()
+                elif 'Dịch giả:' in label.text:
+                    translator = value.text.strip()
+                elif 'Nhà Xuất Bản:' in label.text:
+                    publisher = value.text.strip()
+                elif 'Tác giả:' in label.text:
+                    author_name = value.text.strip()
+                elif 'Số trang:' in label.text:
+                    num_pages = value.text.strip()
 
-        # extract book's author
-        author_name = soup.find('span', class_='author').get_text(strip=True)
-
+        #Get book description
         description_section = soup.find('div', {'id': 'content_description'})
-        description_text = soup.find("div",{"class":"full-description"}).text.split("...")[0]
-      
-        # extract the href attribute
+        description_text = description_section.get_text(strip=True)
+
+        # find the <a> tag with id starting with "det_img_link"
         img_link_tag = soup.find('a', {'id': lambda x: x and x.startswith('det_img_link')})
 
         # extract the href attribute
         img_link = img_link_tag.get('href')
-
-        print(img_link)
 
         #Fill all information in class Book
         book.title = book_title
@@ -101,6 +116,6 @@ class Nhasachphuongnam:
         book.image_url = img_link
         book.genere = self.genere
 
-        return book
+        return book.get_book_info()
         
 

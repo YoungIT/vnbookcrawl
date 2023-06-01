@@ -7,6 +7,8 @@ import csv
 
 from loguru import logger
 
+logger.add("logging/bookbuy.log", backtrace=True, diagnose=True)
+
 class Bookbuy:
    
     def __init__(self, base_url, genere, page_num, page_max):
@@ -20,47 +22,56 @@ class Bookbuy:
         page_num = self.page_num
         page_max = self.page_max
         while page_num<page_max:
+            try:
 
-            logger.info(f"Crawling Page {page_num} of {self.base_url}")
-            
-            page_url = f"{self.base_url}?Page={page_num}"
-            
-            response = get_response(page_url)
-            # parse the HTML content using Beautiful Soup
-            soup = BeautifulSoup(response.content, 'html.parser')
-            book_div = soup.find_all('div', class_='t-view')
-            if len(book_div) == 1:
-                break
-            else:
-                # find all the book links and append them to the list
-                for link in book_div:
-                    try:
-                        booklinks.append("https://bookbuy.vn"+link.a['href'])
-                    except:
-                        pass
+                logger.info(f"Crawling Page {page_num} of {self.base_url}")
+                
+                page_url = f"{self.base_url}?Page={page_num}"
+                
+                response = get_response(page_url)
+                # parse the HTML content using Beautiful Soup
+                soup = BeautifulSoup(response.content, 'html.parser')
+                book_div = soup.find_all('div', class_='t-view')
+                if len(book_div) == 1:
+                    break
+                else:
+                    # find all the book links and append them to the list
+                    for link in book_div:
+                        try:
+                            booklinks.append("https://bookbuy.vn"+link.a['href'])
+                        except:
+                            pass
 
-            # check if the response header contains the HTML code indicating a 404 error
-            
-            if page_num == page_max:
+                # check if the response header contains the HTML code indicating a 404 error
+                
+                if page_num == page_max:
 
-                break
+                    break
 
-            # increment the page number and continue to the next page
-            page_num += 1
+                # increment the page number and continue to the next page
+                page_num += 1
+            except Exception as Error:
+                logger.warning(f"Cannot scrape {page_url} due to Error: {Error}")
 
         # return booklinks
         
         bookRead = []
         for book in booklinks:
-            logger.debug(f"Reading book: {book}")
-            br = self.readBooks(book)
-            bookRead.append(br)
+            try:
+                logger.debug(f"Reading book: {book}")
+                br = self.readBooks(book)
+                bookRead.append(br)
+            except Exception as Error:
+                logger.warning(f"Cant read book {book} due to Error: {Error}")
+
         #write bookRead list to csv file
         # with open('nhasachphuongnam.csv', 'w', newline='', encoding='utf-8') as file:
         #     writer = csv.writer(file)
         #     writer.writerow(['title', 'image_url', 'genere', 'author', 'publisher', 'price', 'description', 'translator', 'num_pages'])
         #     for book in bookRead:
         #         writer.writerow([book.title, book.image_url, book.genere, book.author, book.publisher, book.price, book.description, book.translator, book.num_pages])
+
+        return bookRead
 
     def readBooks(self, booklink):
 

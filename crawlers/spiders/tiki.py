@@ -5,6 +5,8 @@ import csv
 
 from loguru import logger
 
+logger.add("logging/tiki.log", backtrace=True, diagnose=True)
+
 _category_path = "https://tiki.vn/api/personalish/v1/blocks/listings?limit=100&include=advertisement&aggregations=1&category"
 _book_detail = 'https://tiki.vn/api/v2/products'
 
@@ -26,21 +28,24 @@ class Tiki:
         page_max = self.page_max
 
         while page_num<page_max:
-            logger.info(f"Crawling Page {page_num} of {self.base_url}")
+            try:
+                logger.info(f"Crawling Page {page_num} of {self.base_url}")
 
-            page_url = f"{_category_path}={self.categoryid}&page=1&urlKey={self.urlkey}"
-            response = get_response(page_url).json()
+                page_url = f"{_category_path}={self.categoryid}&page=1&urlKey={self.urlkey}"
+                response = get_response(page_url).json()
 
-            if page_num == page_max:
-                break
+                if page_num == page_max:
+                    break
 
-            elif len(response['data']) == 0:
-                break
-            else:
-                for data in response['data']:
-                    booklinks.append( (data['id'],data['seller_product_id']) )
+                elif len(response['data']) == 0:
+                    break
+                else:
+                    for data in response['data']:
+                        booklinks.append( (data['id'],data['seller_product_id']) )
 
-            page_num += 1
+                page_num += 1
+            except:
+                pass
 
         bookRead = []
         for book in booklinks:

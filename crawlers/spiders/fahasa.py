@@ -7,6 +7,8 @@ import csv
 
 from loguru import logger
 
+logger.add("logging/fahasa.log", backtrace=True, diagnose=True)
+
 class Fahasa:
    
     def __init__(self, base_url, genere, page_num, page_max):
@@ -22,32 +24,38 @@ class Fahasa:
         page_max = self.page_max
         
         while page_num<page_max:
+            try:
 
-            logger.info(f"Crawling Page {page_num} of {self.base_url}")
+                logger.info(f"Crawling Page {page_num} of {self.base_url}")
 
-            page_url = f"{self.base_url}?order=num_orders&limit=24&p={page_num}"
+                page_url = f"{self.base_url}?order=num_orders&limit=24&p={page_num}"
 
-            response = get_response(page_url)
-            soup = BeautifulSoup(response.content, 'html.parser')
+                response = get_response(page_url)
+                soup = BeautifulSoup(response.content, 'html.parser')
 
-            book_div = soup.findAll("h2",{"class":"product-name-no-ellipsis p-name-list"})
-            if len(book_div) == 0:
-                break
-            else:
-                for link in book_div:
-                    booklinks.append(link.a['href'])
+                book_div = soup.findAll("h2",{"class":"product-name-no-ellipsis p-name-list"})
+                if len(book_div) == 0:
+                    break
+                else:
+                    for link in book_div:
+                        booklinks.append(link.a['href'])
 
-            if page_num == page_max:
-                break 
+                if page_num == page_max:
+                    break 
 
-            page_num += 1
+                page_num += 1
+            except:
+                pass
         
         # return booklinks
         bookRead = []
         for book in booklinks:
-            logger.debug(f"Reading book: {book}")
-            br = self.readBooks(book)
-            bookRead.append(br)
+            try:
+                logger.debug(f"Reading book: {book}")
+                br = self.readBooks(book)
+                bookRead.append(br)
+            except:
+                pass
 
         return bookRead
 

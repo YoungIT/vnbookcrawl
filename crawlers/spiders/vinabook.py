@@ -1,9 +1,12 @@
+import unicodedata
 from ..utils.requester import get_response
 from bs4 import BeautifulSoup
 from ..models.book import Book
 import csv
 
 from loguru import logger
+
+logger.add("logging/vinabook.log", backtrace=True, diagnose=True)
 
 class Vinabook:
    
@@ -18,43 +21,41 @@ class Vinabook:
         page_num = self.page_num
         page_max = self.page_max
         while page_num<page_max:
+            try:
 
-            logger.info(f"Crawling Page {page_num} of {self.base_url}")
+                logger.info(f"Crawling Page {page_num} of {self.base_url}")
+                
+                page_url = f"{self.base_url}page-{page_num}"
+
+                response = get_response(page_url)
+                soup = BeautifulSoup(response.text, "html.parser")
             
-            page_url = f"{self.base_url}page-{page_num}"
+                for link in soup.findAll("p",{"class":"price-info-nd"}):
+                    logger.debug(link.a['href'].rstrip())
+                    booklinks.append(link.a['href'].rstrip())
 
-            response = get_response(page_url)
-            soup = BeautifulSoup(response.text, "html.parser")
+                if "Không có sản phẩm" in response.text:
+
+                    break
+
+                if page_num == page_max:
+
+                    break
+
+                page_num += 1
+            except:
+                pass
         
-            for link in soup.findAll("p",{"class":"price-info-nd"}):
-                logger.debug(link.a['href'].rstrip())
-                booklinks.append(link.a['href'].rstrip())
-
-            if "Không có sản phẩm" in response.text:
-
-                break
-
-            if page_num == page_max:
-
-                break
-
-            page_num += 1
-        
-        # return booklinks
-            
         bookRead = []
         for book in booklinks:
-            logger.debug(f"Reading book: {book}")
-            br = self.readBooks(book)
-            bookRead.append(br)
+            try:
+                logger.debug(f"Reading book: {book}")
+                br = self.readBooks(book)
+                bookRead.append(br)
+            except:
+                pass
 
-        # print("Successfuly taken all book")
-        #write bookRead list to csv file
-        # with open('nhasachphuongnam.csv', 'w', newline='', encoding='utf-8') as file:
-            # writer = csv.writer(file)
-            # writer.writerow(['title', 'image_url', 'genere', 'author', 'publisher', 'price', 'description', 'translator', 'num_pages'])
-            # for book in bookRead:
-            #     writer.writerow([book.title, book.image_url, book.genere, book.author, book.publisher, book.price, book.description, book.translator, book.num_pages])
+        return bookRead
 
     def readBooks(self, booklinks):
 
@@ -83,7 +84,7 @@ class Vinabook:
         book_title = soup.h1.text
 
         # extract the book price
-        book_price = soup.find("span",{"class":"list-price nowrap"}).text
+        book_price = unicodedata.normalize("NFKD", soup.find("span",{"class":"price"}).text)
 
         num_pages = ''
         translator = ''
