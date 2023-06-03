@@ -47,7 +47,6 @@ class Fahasa:
             except:
                 pass
         
-        # return booklinks
         bookRead = []
         for book in booklinks:
             try:
@@ -58,14 +57,6 @@ class Fahasa:
                 pass
 
         return bookRead
-
-        # print("Successfuly taken all book")
-        # #write bookRead list to csv file
-        # with open('nhasachphuongnam.csv', 'w', newline='', encoding='utf-8') as file:
-        #     writer = csv.writer(file)
-        #     writer.writerow(['title', 'image_url', 'genere', 'author', 'publisher', 'price', 'description', 'translator', 'num_pages'])
-        #     for book in bookRead:
-        #         writer.writerow([book.title, book.image_url, book.genere, book.author, book.publisher, book.price, book.description, book.translator, book.num_pages])
 
     def readBooks(self, booklinks):
         response = get_response(booklinks)
@@ -114,7 +105,11 @@ class Fahasa:
             pass
 
         # get book description
-        description_text = soup.find("div",{"id":"desc_content"}).text
+        description_text = ''
+        try:
+            description_text = soup.find("div",{"id":"desc_content"}).text
+        except:
+            pass
 
         # extract the href attribute
         img_link = soup.find("div",{"class":"product-view-image-product"}).img['src']
