@@ -45,7 +45,7 @@ class Fahasa:
 
                 page_num += 1
             except:
-                pass
+                logger.exception(f"Can not reading page {page_url} due to Error: {Error}")
         
         bookRead = []
         for book in booklinks:
@@ -53,8 +53,8 @@ class Fahasa:
                 logger.debug(f"Reading book: {book}")
                 br = self.readBooks(book)
                 bookRead.append(br)
-            except:
-                pass
+            except Exception as Error:
+                logger.exception(f"Can not reading book {book} due to Error: {Error}")
 
         return bookRead
 
@@ -80,37 +80,37 @@ class Fahasa:
         author_name = ''
         try:
             author_name = df[1][df.index[df[0].str.contains("Tác giả")].to_list()[0]]
-        except:
-            pass
+        except Exception as Error:
+            logger.exception(Error)
 
         # extract translater
         translator = ''
         try:
             translator = df[1][df.index[df[0].str.contains("Người Dịch")].to_list()[0]]
-        except:
-            pass
+        except Exception as Error:
+            logger.exception(Error)
 
         # extract publisher
         publisher = ''
         try:
             publisher = df[1][df.index[df[0].str.contains("NXB")].to_list()[0]]
-        except:
-            pass
+        except Exception as Error:
+            logger.exception(Error)
 
         # extract book's total page
         num_pages = ''
         try:
             num_pages = df[1][df.index[df[0].str.contains("Số trang")].to_list()[0]]
-        except:
-            pass
+        except Exception as Error:
+            logger.exception(Error)
 
         # get book description
         description_text = ''
         try:
             description_text = soup.find("div",{"id":"desc_content"}).text
-        except:
-            pass
-
+        except Exception as Error:
+            logger.exception(Error)
+        
         # extract the href attribute
         img_link = soup.find("div",{"class":"product-view-image-product"}).img['src']
         
