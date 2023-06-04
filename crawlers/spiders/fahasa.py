@@ -81,35 +81,35 @@ class Fahasa:
         try:
             author_name = df[1][df.index[df[0].str.contains("Tác giả")].to_list()[0]]
         except Exception as Error:
-            logger.exception(Error)
+            pass
 
         # extract translater
         translator = ''
         try:
             translator = df[1][df.index[df[0].str.contains("Người Dịch")].to_list()[0]]
         except Exception as Error:
-            logger.exception(Error)
+            pass
 
         # extract publisher
         publisher = ''
         try:
             publisher = df[1][df.index[df[0].str.contains("NXB")].to_list()[0]]
         except Exception as Error:
-            logger.exception(Error)
+            pass
 
         # extract book's total page
         num_pages = ''
         try:
             num_pages = df[1][df.index[df[0].str.contains("Số trang")].to_list()[0]]
         except Exception as Error:
-            logger.exception(Error)
+            pass
 
         # get book description
         description_text = ''
         try:
             description_text = soup.find("div",{"id":"desc_content"}).text
         except Exception as Error:
-            logger.exception(Error)
+            pass
         
         # extract the href attribute
         img_link = soup.find("div",{"class":"product-view-image-product"}).img['src']
