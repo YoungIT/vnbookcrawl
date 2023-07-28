@@ -112,7 +112,11 @@ class Fahasa:
             pass
         
         # extract the href attribute
-        img_link = soup.find("div",{"class":"product-view-image-product"}).img['data-src']
+        img_link = ''
+        try:
+            img_link = soup.find("div",{"class":"product-view-image-product"}).img['data-src']
+        except Exception as Error:
+            img_link = soup.find("div",{"class":"product-view-image-product"}).img.img['data-src']
         
         #Fill all information in class Book
         book.title = book_title
