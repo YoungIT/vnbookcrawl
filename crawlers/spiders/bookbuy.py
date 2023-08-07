@@ -119,7 +119,7 @@ class Bookbuy:
         description_section = soup.find('div', class_='des-des')
         description_text = description_section.get_text(strip=True)
         # extract the href attribute
-        img_link = soup.find('div',class_='product-zoom slimmage')
+        img_link = soup.find('img',class_='product-zoom slimmage')["src"]
 
         #Fill all information in class Book
         book.title = book_title
