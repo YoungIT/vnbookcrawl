@@ -24,7 +24,7 @@ def crawl(input_file):
 
     df = pd.read_csv(input_file)
     df.dropna(inplace = True) 
-    df.columns = ["STT", "Thể loại", "Nguồn nhập"]
+    df.columns = ["Thể loại", "Nguồn nhập","Thể loại Chính"]
 
     for idx,url in enumerate(df["Nguồn nhập"]):
             try:
