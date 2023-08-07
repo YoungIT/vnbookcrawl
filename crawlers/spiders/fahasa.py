@@ -1,4 +1,4 @@
-limport re, unicodedata
+import re, unicodedata
 from ..utils.requester import get_response
 import pandas as pd
 from bs4 import BeautifulSoup
